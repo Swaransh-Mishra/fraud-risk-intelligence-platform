@@ -201,7 +201,7 @@ flowchart TB
     K --> P[Docker Container]
     P --> Q[Cloud Deployment]
 
-
+```
 ---
 
 ## Dataset & Data Engineering
@@ -245,7 +245,7 @@ flowchart LR
     G --> H
     H --> I    
 
-
+```
 ---
 
 ## Modeling Strategy
@@ -348,6 +348,7 @@ Validation Predictions
        ▼
 Evaluation Framework
 
+```
 
 ---
 
@@ -394,7 +395,7 @@ Validation Comparison
       ├── F1
       ├── False Positives
       └── False Negatives
-
+```
 ---
 
 ## Explainability & Error Analysis
@@ -423,7 +424,7 @@ Every prediction can be categorized into one of four outcomes:
  Legitimate      Fraud     False       Missed
   Correct        Correct   Alert        Fraud
 
-
+```
 ---
 
 ## Production API & Application Layer
@@ -489,7 +490,7 @@ FastAPI provides the production inference API for the fraud-risk model.
           ▼
        System Status
 
-
+```
 ---
 
 # Testing & Production Validation
@@ -517,7 +518,7 @@ The complete test suite currently passes:
 
 ```text
 82 passed
-
+```
 
 
 # Project Structure
@@ -578,7 +579,7 @@ Fraud-Risk-Intelligence-Platform/
 ├── README.md
 └── .gitignore
 
-
+```
 ---
 
 # Project Navigation
@@ -724,7 +725,7 @@ Batch Prediction
 Prediction Results
     ↓
 Download Results
-
+```
 ---
 
 # Repository Assets
@@ -748,7 +749,7 @@ assets/
     ├── streamlit_batch_prediction.png
     └── streamlit_monitoring.png
 
-
+```
 ---
 
 # Connect
