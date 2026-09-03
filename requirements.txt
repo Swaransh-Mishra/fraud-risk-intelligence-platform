@@ -1,0 +1,55 @@
+# Data processing
+
+pandas
+numpy
+pyarrow
+
+# Machine learning
+
+scikit-learn
+xgboost
+lightgbm
+catboost
+
+# Explainability
+
+shap
+
+# Model persistence
+
+joblib
+
+# Experiment tracking
+
+mlflow
+
+# Backend API
+
+fastapi
+uvicorn
+
+# Frontend
+
+streamlit
+
+# Data validation
+
+pydantic
+
+# Configuration
+
+python-dotenv
+
+# Testing
+
+pytest
+httpx
+
+# Visualization
+
+matplotlib
+
+# Notebook environment
+
+jupyter
+ipykernel

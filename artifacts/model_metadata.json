@@ -1,0 +1,33 @@
+{
+    "model_name": "CatBoost Fraud Risk Classifier",
+    "model_type": "catboost_classifier",
+    "decision_threshold": 0.65,
+    "feature_count": 23,
+    "features": [
+        "TX_AMOUNT",
+        "hour_of_day",
+        "day_of_week",
+        "is_weekend",
+        "customer_tx_count",
+        "customer_avg_amount",
+        "customer_max_amount",
+        "customer_amount_std",
+        "time_since_customer_tx",
+        "customer_amount_deviation",
+        "customer_amount_ratio",
+        "customer_tx_count_1h",
+        "customer_tx_count_24h",
+        "customer_amount_sum_24h",
+        "terminal_tx_count",
+        "terminal_avg_amount",
+        "terminal_max_amount",
+        "terminal_amount_std",
+        "terminal_fraud_count",
+        "terminal_fraud_rate",
+        "terminal_tx_count_1h",
+        "terminal_tx_count_24h",
+        "terminal_amount_sum_24h"
+    ],
+    "training_records": 1169723,
+    "test_records": 287873
+}
