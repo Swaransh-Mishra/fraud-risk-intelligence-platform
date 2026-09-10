@@ -28,7 +28,7 @@ def test_load_model():
 
     assert hasattr(
         model,
-        "predict",
+        "predict_proba",
     )
 
 
@@ -104,15 +104,11 @@ def test_model_metadata_json_is_valid():
 def test_loaded_model_can_predict():
     """
     Verify that the production model exposes
-    prediction interfaces.
+    the probability prediction interface used
+    by the production inference pipeline.
     """
 
     model = load_model(MODEL_PATH)
-
-    assert hasattr(
-        model,
-        "predict",
-    )
 
     assert hasattr(
         model,

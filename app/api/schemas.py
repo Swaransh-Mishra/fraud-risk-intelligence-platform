@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -234,7 +234,15 @@ class PerformanceMonitoringRequest(BaseModel):
     against observed transaction outcomes.
     """
 
-    actual_labels: List[int] = Field(
+    actual_labels: List[
+        Annotated[
+            int,
+            Field(
+                ge=0,
+                le=1,
+            ),
+        ]
+    ] = Field(
         ...,
         min_length=1,
         description=(
@@ -243,7 +251,15 @@ class PerformanceMonitoringRequest(BaseModel):
         ),
     )
 
-    predicted_labels: List[int] = Field(
+    predicted_labels: List[
+        Annotated[
+            int,
+            Field(
+                ge=0,
+                le=1,
+            ),
+        ]
+    ] = Field(
         ...,
         min_length=1,
         description=(
@@ -253,11 +269,21 @@ class PerformanceMonitoringRequest(BaseModel):
     )
 
     fraud_probabilities: Optional[
-        List[float]
+        List[
+            Annotated[
+                float,
+                Field(
+                    ge=0,
+                    le=1,
+                ),
+            ]
+        ]
     ] = Field(
         default=None,
+        min_length=1,
         description=(
-            "Optional predicted fraud probabilities."
+            "Optional predicted fraud probabilities. "
+            "Each value must be between 0 and 1."
         ),
     )
 

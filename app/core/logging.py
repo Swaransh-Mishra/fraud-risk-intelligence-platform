@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+
+from app.core.config import LOGS_DIR
 
 
-LOG_DIRECTORY = Path("logs")
-LOG_FILE = LOG_DIRECTORY / "fraud_risk_platform.log"
+LOG_FILE = (
+    LOGS_DIR
+    / "fraud_risk_platform.log"
+)
 
 
 def configure_logging() -> None:
@@ -16,7 +19,7 @@ def configure_logging() -> None:
     application log file.
     """
 
-    LOG_DIRECTORY.mkdir(
+    LOGS_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )

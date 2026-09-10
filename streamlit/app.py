@@ -1,11 +1,15 @@
+import os
+
 import numpy as np
 import pandas as pd
 import requests
 import streamlit as st
 
 
-API_BASE_URL = "http://127.0.0.1:8000"
-
+API_BASE_URL = os.getenv(
+    "API_BASE_URL",
+    "http://127.0.0.1:8000",
+).rstrip("/")
 
 st.set_page_config(
     page_title="Fraud Risk Intelligence Platform",

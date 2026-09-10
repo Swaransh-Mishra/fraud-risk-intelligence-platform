@@ -47,8 +47,8 @@ logger = get_logger(__name__)
 app = FastAPI(
     title="Fraud Risk Intelligence Platform API",
     description=(
-        "Production API for transaction fraud risk prediction "
-        "using the CatBoost Fraud Risk Classifier."
+        "Production API for transaction fraud risk "
+        "prediction using the finalized production model."
     ),
     version="1.0.0",
 )
@@ -125,8 +125,8 @@ def model_info() -> dict:
     response_model=FraudPredictionResponse,
     summary="Predict Fraud Risk",
     description=(
-        "Generate a fraud risk prediction for one transaction "
-        "using the production CatBoost model."
+        "Generate a fraud risk prediction for one "
+        "transaction using the production model."
     ),
 )
 def predict_fraud(
@@ -148,12 +148,16 @@ def predict_fraud(
         result = prediction.iloc[0].to_dict()
 
         fraud_probability = round(
-            float(result["fraud_probability"]),
+            float(
+                result["fraud_probability"]
+            ),
             6,
         )
 
         fraud_risk_score = round(
-            float(result["fraud_risk_score"]),
+            float(
+                result["fraud_risk_score"]
+            ),
             2,
         )
 
@@ -174,7 +178,9 @@ def predict_fraud(
                 predictor.decision_threshold
             ),
             total_transactions=1,
-            predicted_fraud_count=predicted_fraud,
+            predicted_fraud_count=(
+                predicted_fraud
+            ),
             average_fraud_probability=(
                 fraud_probability
             ),
@@ -191,9 +197,15 @@ def predict_fraud(
         )
 
         return FraudPredictionResponse(
-            fraud_probability=fraud_probability,
-            fraud_risk_score=fraud_risk_score,
-            predicted_fraud=predicted_fraud,
+            fraud_probability=(
+                fraud_probability
+            ),
+            fraud_risk_score=(
+                fraud_risk_score
+            ),
+            predicted_fraud=(
+                predicted_fraud
+            ),
             risk_level=risk_level,
             decision_threshold=(
                 predictor.decision_threshold
@@ -222,7 +234,7 @@ def predict_fraud(
     summary="Batch Predict Fraud Risk",
     description=(
         "Generate fraud risk predictions for multiple "
-        "transactions using the production CatBoost model."
+        "transactions using the production model."
     ),
 )
 def predict_fraud_batch(
@@ -251,21 +263,29 @@ def predict_fraud_batch(
                 FraudPredictionResponse(
                     fraud_probability=round(
                         float(
-                            row["fraud_probability"]
+                            row[
+                                "fraud_probability"
+                            ]
                         ),
                         6,
                     ),
                     fraud_risk_score=round(
                         float(
-                            row["fraud_risk_score"]
+                            row[
+                                "fraud_risk_score"
+                            ]
                         ),
                         2,
                     ),
                     predicted_fraud=int(
-                        row["predicted_fraud"]
+                        row[
+                            "predicted_fraud"
+                        ]
                     ),
                     risk_level=str(
-                        row["risk_level"]
+                        row[
+                            "risk_level"
+                        ]
                     ),
                     decision_threshold=(
                         predictor.decision_threshold
@@ -295,8 +315,8 @@ def predict_fraud_batch(
             decision_threshold=(
                 predictor.decision_threshold
             ),
-            total_transactions=len(
-                prediction_results
+            total_transactions=(
+                len(prediction_results)
             ),
             predicted_fraud_count=(
                 predicted_fraud_count
@@ -317,8 +337,8 @@ def predict_fraud_batch(
         )
 
         return BatchPredictionResponse(
-            total_transactions=len(
-                prediction_results
+            total_transactions=(
+                len(prediction_results)
             ),
             predicted_fraud_count=(
                 predicted_fraud_count
@@ -447,7 +467,11 @@ def detect_drift(
             "drift_detected=%s | "
             "drifted_feature_count=%s",
             report["drift_detected"],
-            len(report["drifted_features"]),
+            len(
+                report[
+                    "drifted_features"
+                ]
+            ),
         )
 
         return DriftDetectionResponse(
@@ -455,7 +479,9 @@ def detect_drift(
                 report["drift_detected"]
             ),
             drifted_features=list(
-                report["drifted_features"]
+                report[
+                    "drifted_features"
+                ]
             ),
             evaluated_features=list(
                 report[
@@ -530,13 +556,19 @@ def evaluate_model_performance(
 
         return PerformanceMonitoringResponse(
             total_transactions=int(
-                result["total_transactions"]
+                result[
+                    "total_transactions"
+                ]
             ),
             actual_fraud_count=int(
-                result["actual_fraud_count"]
+                result[
+                    "actual_fraud_count"
+                ]
             ),
             predicted_fraud_count=int(
-                result["predicted_fraud_count"]
+                result[
+                    "predicted_fraud_count"
+                ]
             ),
             accuracy=float(
                 result["accuracy"]

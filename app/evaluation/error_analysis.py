@@ -246,8 +246,11 @@ def get_high_confidence_errors(
     False positives are sorted by highest predicted
     fraud probability.
 
-    False negatives are sorted by predicted fraud
-    probability closest to the decision threshold.
+    False negatives are also sorted by highest predicted
+    fraud probability, identifying fraudulent transactions
+    that received relatively high fraud probabilities but
+    were still classified as legitimate at the selected
+    threshold.
     """
 
     false_positives = (

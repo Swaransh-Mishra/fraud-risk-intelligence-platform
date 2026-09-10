@@ -3,15 +3,14 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from app.evaluation.metrics import evaluate_model
-
 
 class WeightedProbabilityEnsemble:
     """
-    Combine fraud probabilities from multiple trained models.
+    Generic probability-weighted ensemble for binary classifiers.
 
-    Each model contributes a configurable weight to the
-    final fraud probability.
+    Each component model must implement predict_proba().
+    The ensemble combines positive-class probabilities using
+    the supplied weights.
     """
 
     def __init__(
@@ -21,12 +20,22 @@ class WeightedProbabilityEnsemble:
     ) -> None:
         if len(models) != len(weights):
             raise ValueError(
-                "The number of models and weights must match."
+                "Number of models must match number of weights."
+            )
+
+        if not models:
+            raise ValueError(
+                "At least one model is required."
             )
 
         if not np.isclose(sum(weights), 1.0):
             raise ValueError(
                 "Ensemble weights must sum to 1.0."
+            )
+
+        if any(weight < 0 for weight in weights):
+            raise ValueError(
+                "Ensemble weights must be non-negative."
             )
 
         self.models = models
@@ -60,84 +69,41 @@ class WeightedProbabilityEnsemble:
         X: pd.DataFrame,
     ) -> np.ndarray:
         probabilities = self.predict_proba(X)[:, 1]
-
         return (probabilities >= 0.5).astype(int)
 
+    @property
+    def feature_importances_(self) -> np.ndarray:
+        """
+        Return the weighted average of normalized component-model
+        feature importances.
+        """
+        importances = []
 
-def compare_ensemble_weights(
-    models: list,
-    weight_configurations: list[tuple[float, float]],
-    X_validation: pd.DataFrame,
-    y_validation: pd.Series,
-) -> pd.DataFrame:
-    """
-    Compare different HGB and XGBoost probability weights
-    using validation data.
-    """
+        for model in self.models:
+            if not hasattr(model, "feature_importances_"):
+                raise AttributeError(
+                    "All ensemble models must expose "
+                    "feature_importances_."
+                )
 
-    results = []
+            model_importances = np.asarray(
+                model.feature_importances_,
+                dtype=float,
+            )
 
-    for hgb_weight, xgb_weight in weight_configurations:
-        ensemble = WeightedProbabilityEnsemble(
-            models=models,
-            weights=[hgb_weight, xgb_weight],
+            total_importance = model_importances.sum()
+
+            if total_importance <= 0:
+                raise ValueError(
+                    "Model feature importances must have a positive sum."
+                )
+
+            importances.append(
+                model_importances / total_importance
+            )
+
+        return np.average(
+            importances,
+            axis=0,
+            weights=self.weights,
         )
-
-        metrics = evaluate_model(
-            ensemble,
-            X_validation,
-            y_validation,
-            threshold=0.5,
-        )
-
-        results.append(
-            {
-                "hgb_weight": hgb_weight,
-                "xgb_weight": xgb_weight,
-                "roc_auc": metrics["roc_auc"],
-                "pr_auc": metrics["pr_auc"],
-                "precision": metrics["precision"],
-                "recall": metrics["recall"],
-                "f1_score": metrics["f1_score"],
-            }
-        )
-
-    return (
-        pd.DataFrame(results)
-        .sort_values(
-            by=["pr_auc", "f1_score"],
-            ascending=False,
-        )
-        .reset_index(drop=True)
-    )
-
-def train_final_ensemble(
-    X_train: pd.DataFrame,
-    y_train: pd.Series,
-) -> WeightedProbabilityEnsemble:
-    """
-    Train the final fraud detection ensemble using the
-    selected 70/30 HGB/XGBoost configuration.
-    """
-
-    from app.models.tuning import (
-        train_tuned_hist_gradient_boosting,
-        train_tuned_xgboost,
-    )
-
-    hgb_model = train_tuned_hist_gradient_boosting(
-        X_train,
-        y_train,
-    )
-
-    xgb_model = train_tuned_xgboost(
-        X_train,
-        y_train,
-    )
-
-    final_model = WeightedProbabilityEnsemble(
-        models=[hgb_model, xgb_model],
-        weights=[0.7, 0.3],
-    )
-
-    return final_model

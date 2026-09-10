@@ -1,32 +1,31 @@
+from __future__ import annotations
 
 from typing import Any
 
-from catboost import CatBoostClassifier
 
+def get_final_model_metadata(
+    model_name: str,
+    model_type: str,
+    decision_threshold: float,
+    feature_count: int,
+    ensemble_weights: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """
+    Build metadata for a finalized production model.
 
-FINAL_MODEL_NAME = "CatBoost Fraud Risk Classifier"
-FINAL_MODEL_TYPE = "catboost_classifier"
-FINAL_DECISION_THRESHOLD = 0.65
-
-
-def build_final_model() -> CatBoostClassifier:
-    return CatBoostClassifier(
-        iterations=500,
-        depth=6,
-        learning_rate=0.05,
-        loss_function="Logloss",
-        eval_metric="AUC",
-        random_seed=42,
-        verbose=False,
-        allow_writing_files=False,
-    )
-
-
-def get_final_model_metadata() -> dict[str, Any]:
-    return {
-        "model_name": FINAL_MODEL_NAME,
-        "model_type": FINAL_MODEL_TYPE,
-        "decision_threshold": FINAL_DECISION_THRESHOLD,
-        "feature_count": 23,
+    Production model identity, threshold, feature count,
+    and optional ensemble weights are supplied by the
+    finalized model-training workflow.
+    """
+    metadata: dict[str, Any] = {
+        "model_name": model_name,
+        "model_type": model_type,
+        "decision_threshold": decision_threshold,
+        "feature_count": feature_count,
     }
+
+    if ensemble_weights is not None:
+        metadata["ensemble_weights"] = ensemble_weights
+
+    return metadata
 

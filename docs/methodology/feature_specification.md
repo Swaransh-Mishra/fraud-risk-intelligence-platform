@@ -1,206 +1,147 @@
-# Feature Engineering Specification
+# Feature Specification
 
 ## 1. Objective
 
-The feature-engineering pipeline converts raw transaction data into leakage-safe behavioral features for fraud-risk prediction.
+The Fraud Risk Intelligence Platform uses engineered transaction, customer, and terminal behavioural features to identify potentially fraudulent transactions.
 
-Features must use only information that would have been available at the time of the transaction being scored.
+The feature pipeline is designed to preserve chronological transaction history and prevent the current transaction's own fraud outcome from directly influencing its model inputs.
 
-The raw dataset will not be modified.
-
----
-
-## 2. Feature Groups
-
-The feature pipeline will contain the following groups:
-
-1. Transaction and temporal features
-2. Customer historical behavior
-3. Customer rolling behavior
-4. Customer behavioral deviation
-5. Terminal historical behavior
-6. Terminal rolling behavior
-7. Cross-behavior features
+The finalized model uses **23 approved features**.
 
 ---
 
-## 3. Transaction and Temporal Features
+## 2. Final Model Feature Schema
 
-| Feature | Source | Description |
-|---|---|---|
-| `transaction_amount` | `TX_AMOUNT` | Current transaction amount |
-| `hour_of_day` | `TX_DATETIME` | Hour in which transaction occurred |
-| `day_of_week` | `TX_DATETIME` | Day of week |
-| `is_weekend` | `TX_DATETIME` | Weekend indicator |
+The model feature schema is centrally defined through the project's reusable preprocessing configuration.
 
-`TX_DATETIME` will be used to derive temporal features rather than being passed directly to the model.
+The final 23 features are:
 
----
-
-## 4. Customer Historical Features
-
-Customer history will be calculated using only transactions occurring before the current transaction.
+### Transaction and Temporal Features
 
 | Feature | Description |
-|---|---|
-| `customer_tx_count` | Number of previous customer transactions |
-| `customer_avg_amount` | Historical average transaction amount |
-| `customer_max_amount` | Historical maximum transaction amount |
-| `customer_amount_std` | Historical transaction amount variability |
-| `time_since_customer_tx` | Time since the customer's previous transaction |
+| --- | --- |
+| `TX_AMOUNT` | Current transaction amount |
+| `hour_of_day` | Hour in which the transaction occurred |
+| `day_of_week` | Day of the week of the transaction |
+| `is_weekend` | Indicator for weekend transactions |
 
-The current transaction must not contribute to these statistics.
-
----
-
-## 5. Customer Rolling Features
-
-Rolling windows will measure recent customer activity.
-
-### 1-hour window
+### Customer Historical Behaviour
 
 | Feature | Description |
-|---|---|
-| `customer_tx_count_1h` | Customer transactions during the previous hour |
-| `customer_amount_sum_1h` | Customer transaction value during the previous hour |
+| --- | --- |
+| `customer_tx_count` | Historical number of transactions associated with the customer |
+| `customer_avg_amount` | Historical average transaction amount for the customer |
+| `customer_max_amount` | Historical maximum transaction amount for the customer |
+| `customer_amount_std` | Historical standard deviation of the customer's transaction amounts |
+| `time_since_customer_tx` | Time elapsed since the customer's previous transaction |
 
-### 24-hour window
-
-| Feature | Description |
-|---|---|
-| `customer_tx_count_24h` | Customer transactions during the previous 24 hours |
-| `customer_amount_sum_24h` | Customer transaction value during the previous 24 hours |
-
-The current transaction is excluded from all rolling windows.
-
----
-
-## 6. Customer Behavioral Deviation
-
-The model should identify transactions that are unusual relative to the customer's historical behavior.
+### Customer Amount Behaviour
 
 | Feature | Description |
-|---|---|
-| `customer_amount_ratio` | Current amount relative to previous customer average |
-| `customer_amount_deviation` | Difference between current amount and previous customer behavior |
+| --- | --- |
+| `customer_amount_deviation` | Difference between the current transaction amount and the customer's historical spending behaviour |
+| `customer_amount_ratio` | Ratio comparing the current transaction amount with the customer's historical spending level |
 
-The historical reference must only contain information available before the current transaction.
-
----
-
-## 7. Terminal Historical Features
-
-Terminal behavior will be represented using historical transactions occurring before the current transaction.
+### Customer Recent Activity
 
 | Feature | Description |
-|---|---|
-| `terminal_tx_count` | Previous transactions at the terminal |
-| `terminal_avg_amount` | Historical average transaction amount at the terminal |
+| --- | --- |
+| `customer_tx_count_1h` | Customer transaction count within the recent one-hour window |
+| `customer_tx_count_24h` | Customer transaction count within the recent 24-hour window |
+| `customer_amount_sum_24h` | Customer transaction-amount total within the recent 24-hour window |
 
----
-
-## 8. Terminal Rolling Features
-
-### 1-hour window
+### Terminal Historical Behaviour
 
 | Feature | Description |
-|---|---|
-| `terminal_tx_count_1h` | Terminal transactions during the previous hour |
-| `terminal_amount_sum_1h` | Terminal transaction value during the previous hour |
+| --- | --- |
+| `terminal_tx_count` | Historical number of transactions associated with the terminal |
+| `terminal_avg_amount` | Historical average transaction amount for the terminal |
+| `terminal_max_amount` | Historical maximum transaction amount for the terminal |
+| `terminal_amount_std` | Historical standard deviation of terminal transaction amounts |
 
-### 24-hour window
+### Terminal Fraud History
 
 | Feature | Description |
-|---|---|
-| `terminal_tx_count_24h` | Terminal transactions during the previous 24 hours |
-| `terminal_amount_sum_24h` | Terminal transaction value during the previous 24 hours |
+| --- | --- |
+| `terminal_fraud_count` | Historical number of fraud outcomes associated with the terminal |
+| `terminal_fraud_rate` | Historical fraud rate associated with the terminal |
 
-The current transaction is excluded.
+### Terminal Recent Activity
 
----
-
-## 9. Identifier Handling
-
-`CUSTOMER_ID` and `TERMINAL_ID` will not be directly used as high-cardinality categorical model features.
-
-Instead, they will be used to construct behavioral features.
+| Feature | Description |
+| --- | --- |
+| `terminal_tx_count_1h` | Terminal transaction count within the recent one-hour window |
+| `terminal_tx_count_24h` | Terminal transaction count within the recent 24-hour window |
+| `terminal_amount_sum_24h` | Terminal transaction-amount total within the recent 24-hour window |
 
 ---
 
-## 10. Excluded Features
+## 3. Feature Availability
 
-### `TX_FRAUD`
+Feature generation is performed chronologically across the transaction history.
 
-This is the prediction target and must never be used as a model feature.
+For behavioural features, information from transactions occurring before the current transaction can contribute to the current feature values.
 
-### `TX_FRAUD_SCENARIO`
+This is particularly important for:
 
-This field directly describes the fraud scenario and will not be used as a model input.
+- customer transaction history
+- customer amount statistics
+- customer activity windows
+- terminal transaction history
+- terminal amount statistics
+- terminal activity windows
 
-It may be retained for post-model analysis and error analysis.
-
-### Raw identifiers
-
-`CUSTOMER_ID` and `TERMINAL_ID` will not be directly passed to the baseline model.
-
----
-
-## 11. Leakage Prevention
-
-For every transaction at time T:
-
-- historical features use information before T
-- rolling windows end immediately before T
-- the current transaction is excluded
-- future transactions are never used
-- target labels are never used to construct ordinary behavioral features
-
-The feature pipeline must preserve chronological ordering.
+The objective is to represent the information that would be available from transaction history when evaluating a subsequent transaction.
 
 ---
 
-## 12. Feature Development Strategy
+## 4. Historical Fraud Features
 
-Features will be introduced incrementally.
+Two finalized features explicitly use historical fraud outcomes:
 
-### Feature Set 1 — Baseline
+- `terminal_fraud_count`
+- `terminal_fraud_rate`
 
-- `transaction_amount`
-- `hour_of_day`
-- `day_of_week`
-- `is_weekend`
+These features are treated as sequential historical signals.
 
-### Feature Set 2 — Customer Behavior
+A previous transaction's fraud outcome may contribute to the terminal's historical fraud statistics for a subsequent transaction when that outcome is considered available to the scoring system.
 
-Add customer historical features.
+This introduces an explicit operational assumption:
 
-### Feature Set 3 — Customer Rolling Behavior
+> Previous transaction outcomes are assumed to become available before subsequent transactions are scored.
 
-Add 1-hour and 24-hour customer activity features.
-
-### Feature Set 4 — Terminal Behavior
-
-Add historical and rolling terminal activity.
-
-### Feature Set 5 — Behavioral Deviation
-
-Add customer amount deviation and ratio features.
-
-Additional features will only be retained when they provide measurable value without introducing leakage.
+The current transaction's own fraud label is not used to construct its terminal fraud-history features.
 
 ---
 
-## 13. Validation Requirements
+## 5. Current-Row Leakage Protection
 
-The feature pipeline must be validated for:
+The feature pipeline is designed so that the current transaction does not directly contribute its own target outcome to its model inputs.
 
-- row-count preservation
-- missing values
-- infinite values
-- correct data types
-- chronological ordering
-- leakage
-- feature distributions
-- reproducibility
+Historical calculations are based on preceding transaction history, including prior observations used for customer and terminal behavioural statistics.
 
-Feature engineering will be implemented in application code rather than manually inside the notebook.
+This distinction is important:
+
+- **Current-row target leakage:** the transaction's own fraud label influences its features.
+- **Historical-label availability:** previously observed fraud outcomes influence features for later transactions.
+
+The first is treated as leakage and must be avoided.
+
+The second is an explicit sequential-scoring assumption in this project.
+
+---
+
+## 6. Feature Groups
+
+The final feature set can be viewed as five major signal groups:
+
+```text
+Transaction / Time
+        ↓
+Customer Behaviour
+        ↓
+Customer Recent Activity
+        ↓
+Terminal Behaviour
+        ↓
+Terminal Historical Fraud + Recent Activity

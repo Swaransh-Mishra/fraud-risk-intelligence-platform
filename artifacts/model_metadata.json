@@ -1,7 +1,7 @@
 {
-    "model_name": "CatBoost Fraud Risk Classifier",
-    "model_type": "catboost_classifier",
-    "decision_threshold": 0.65,
+    "model_name": "RandomizedSearch XGBoost + RandomizedSearch CatBoost (0.3/0.7)",
+    "model_type": "WeightedProbabilityEnsemble",
+    "decision_threshold": 0.7000000000000001,
     "feature_count": 23,
     "features": [
         "TX_AMOUNT",
@@ -29,5 +29,7 @@
         "terminal_amount_sum_24h"
     ],
     "training_records": 1169723,
-    "test_records": 287873
+    "test_records": 287873,
+    "final_model": "RandomizedSearch XGBoost + RandomizedSearch CatBoost (0.3/0.7)",
+    "production_threshold": 0.7000000000000001
 }

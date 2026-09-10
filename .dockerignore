@@ -15,13 +15,23 @@ __pycache__/
 data/raw/
 data/processed/
 
+artifacts/experiments/
+logs/
+
+notebooks/
+tests/
+streamlit/
+scripts/
+docs/
+assets/
+
 *.csv
 *.zip
 
 *.log
+*.jsonl
 
 .env
 
 .DS_Store
 Thumbs.db
-

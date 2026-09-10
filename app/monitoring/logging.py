@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 
+from app.core.config import LOGS_DIR
 
-LOG_DIRECTORY = Path("logs")
 
 LOG_FILE_PATH = (
-    LOG_DIRECTORY
+    LOGS_DIR
     / "prediction_events.jsonl"
 )
 
@@ -20,15 +19,12 @@ def log_prediction_event(
     total_transactions: int,
     predicted_fraud_count: int,
     average_fraud_probability: float,
-) -> None:
+) -> dict:
     """
-    Store a prediction monitoring event in JSONL format.
-
-    Each line in the log file represents one prediction
-    or batch prediction event.
+    Log a prediction event for monitoring analytics.
     """
 
-    LOG_FILE_PATH.parent.mkdir(
+    LOGS_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )
@@ -61,3 +57,5 @@ def log_prediction_event(
             json.dumps(event)
             + "\n"
         )
+
+    return event

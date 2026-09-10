@@ -21,7 +21,7 @@ def experiments_directory(
 
     monkeypatch.setattr(
         experiment_module,
-        "EXPERIMENTS_DIRECTORY",
+        "EXPERIMENTS_DIR",
         temporary_directory,
     )
 

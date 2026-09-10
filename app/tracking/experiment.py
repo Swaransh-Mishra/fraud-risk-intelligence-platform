@@ -5,10 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
-
-EXPERIMENTS_DIRECTORY = Path(
-    "artifacts/experiments"
-)
+from app.core.config import EXPERIMENTS_DIR
 
 
 def _get_experiment_file_path(
@@ -26,7 +23,7 @@ def _get_experiment_file_path(
     )
 
     return (
-        EXPERIMENTS_DIRECTORY
+        EXPERIMENTS_DIR
         / f"{safe_experiment_name}.jsonl"
     )
 
@@ -43,7 +40,7 @@ def log_experiment(
     evaluation metrics, and optional metadata.
     """
 
-    EXPERIMENTS_DIRECTORY.mkdir(
+    EXPERIMENTS_DIR.mkdir(
         parents=True,
         exist_ok=True,
     )

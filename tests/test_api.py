@@ -3,10 +3,9 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from app.main import app
-
+from app.inference.predictor import predictor
 
 client = TestClient(app)
-
 
 VALID_TRANSACTION = {
     "TX_AMOUNT": 49.87,
@@ -33,7 +32,6 @@ VALID_TRANSACTION = {
     "terminal_tx_count_24h": 3,
     "terminal_amount_sum_24h": 166.29,
 }
-
 
 HIGH_RISK_TRANSACTION = {
     "TX_AMOUNT": 500.0,
@@ -67,9 +65,7 @@ def test_root_endpoint() -> None:
 
     assert response.status_code == 200
     assert response.json() == {
-        "message": (
-            "Fraud Risk Intelligence Platform API is running"
-        )
+        "message": "Fraud Risk Intelligence Platform API is running"
     }
 
 
@@ -86,18 +82,13 @@ def test_model_info_endpoint() -> None:
     response = client.get("/model-info")
 
     assert response.status_code == 200
-
     data = response.json()
 
-    assert data["model_name"] == (
-        "CatBoost Fraud Risk Classifier"
-    )
-    assert data["model_type"] == (
-        "catboost_classifier"
-    )
-    assert data["decision_threshold"] == 0.65
-    assert data["feature_count"] == 23
-    assert len(data["features"]) == 23
+    assert data["model_name"] == predictor.metadata["model_name"]
+    assert data["model_type"] == predictor.metadata["model_type"]
+    assert data["decision_threshold"] == predictor.decision_threshold
+    assert data["feature_count"] == len(predictor.required_features)
+    assert data["features"] == predictor.required_features
 
 
 def test_single_prediction() -> None:
@@ -107,14 +98,12 @@ def test_single_prediction() -> None:
     )
 
     assert response.status_code == 200
-
     data = response.json()
 
     assert 0.0 <= data["fraud_probability"] <= 1.0
     assert 0.0 <= data["fraud_risk_score"] <= 100.0
     assert data["predicted_fraud"] in [0, 1]
-    assert data["decision_threshold"] == 0.65
-
+    assert data["decision_threshold"] == predictor.decision_threshold
     assert data["risk_level"] in [
         "minimal",
         "low",
@@ -152,13 +141,11 @@ def test_batch_prediction() -> None:
     )
 
     assert response.status_code == 200
-
     data = response.json()
 
     assert data["total_transactions"] == 2
-    assert data["decision_threshold"] == 0.65
+    assert data["decision_threshold"] == predictor.decision_threshold
     assert len(data["predictions"]) == 2
-
     assert 0 <= data["predicted_fraud_count"] <= 2
 
     assert (
@@ -173,16 +160,16 @@ def test_batch_prediction() -> None:
             <= prediction["fraud_probability"]
             <= 1.0
         )
-
         assert (
             0.0
             <= prediction["fraud_risk_score"]
             <= 100.0
         )
-
         assert prediction["predicted_fraud"] in [0, 1]
-
-        assert prediction["decision_threshold"] == 0.65
+        assert (
+            prediction["decision_threshold"]
+            == predictor.decision_threshold
+        )
 
 
 def test_empty_batch_prediction() -> None:

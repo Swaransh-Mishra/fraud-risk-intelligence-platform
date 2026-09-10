@@ -10,18 +10,11 @@ scikit-learn
 xgboost
 lightgbm
 catboost
-
-# Explainability
-
-shap
+scipy
 
 # Model persistence
 
 joblib
-
-# Experiment tracking
-
-mlflow
 
 # Backend API
 
@@ -35,10 +28,6 @@ streamlit
 # Data validation
 
 pydantic
-
-# Configuration
-
-python-dotenv
 
 # Testing
 

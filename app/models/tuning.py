@@ -1,131 +1,10 @@
 from __future__ import annotations
 
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingClassifier
+from catboost import CatBoostClassifier
 from xgboost import XGBClassifier
 
 from app.evaluation.metrics import evaluate_model
-
-
-def tune_hist_gradient_boosting(
-    X_train: pd.DataFrame,
-    y_train: pd.Series,
-    X_validation: pd.DataFrame,
-    y_validation: pd.Series,
-) -> pd.DataFrame:
-    """
-    Evaluate a focused set of HistGradientBoosting configurations
-    on the validation dataset.
-    """
-
-    configurations = [
-        {
-            "name": "hgb_baseline",
-            "learning_rate": 0.05,
-            "max_iter": 300,
-            "max_leaf_nodes": 31,
-            "min_samples_leaf": 20,
-            "l2_regularization": 0.0,
-        },
-        {
-            "name": "hgb_more_iterations",
-            "learning_rate": 0.03,
-            "max_iter": 500,
-            "max_leaf_nodes": 31,
-            "min_samples_leaf": 20,
-            "l2_regularization": 0.0,
-        },
-        {
-            "name": "hgb_deeper",
-            "learning_rate": 0.05,
-            "max_iter": 300,
-            "max_leaf_nodes": 63,
-            "min_samples_leaf": 20,
-            "l2_regularization": 0.0,
-        },
-        {
-            "name": "hgb_regularized",
-            "learning_rate": 0.05,
-            "max_iter": 300,
-            "max_leaf_nodes": 31,
-            "min_samples_leaf": 30,
-            "l2_regularization": 1.0,
-        },
-        {
-            "name": "hgb_conservative",
-            "learning_rate": 0.03,
-            "max_iter": 500,
-            "max_leaf_nodes": 15,
-            "min_samples_leaf": 30,
-            "l2_regularization": 1.0,
-        },
-    ]
-
-    results = []
-
-    for config in configurations:
-        model = HistGradientBoostingClassifier(
-            learning_rate=config["learning_rate"],
-            max_iter=config["max_iter"],
-            max_leaf_nodes=config["max_leaf_nodes"],
-            min_samples_leaf=config["min_samples_leaf"],
-            l2_regularization=config["l2_regularization"],
-            random_state=42,
-        )
-
-        model.fit(X_train, y_train)
-
-        metrics = evaluate_model(
-            model,
-            X_validation,
-            y_validation,
-            threshold=0.5,
-        )
-
-        results.append(
-            {
-                "model": config["name"],
-                "learning_rate": config["learning_rate"],
-                "max_iter": config["max_iter"],
-                "max_leaf_nodes": config["max_leaf_nodes"],
-                "min_samples_leaf": config["min_samples_leaf"],
-                "l2_regularization": config["l2_regularization"],
-                "roc_auc": metrics["roc_auc"],
-                "pr_auc": metrics["pr_auc"],
-                "precision": metrics["precision"],
-                "recall": metrics["recall"],
-                "f1_score": metrics["f1_score"],
-            }
-        )
-
-    return (
-        pd.DataFrame(results)
-        .sort_values(by="pr_auc", ascending=False)
-        .reset_index(drop=True)
-    )
-
-
-def train_tuned_hist_gradient_boosting(
-    X_train: pd.DataFrame,
-    y_train: pd.Series,
-) -> HistGradientBoostingClassifier:
-    """
-    Train the best HistGradientBoosting configuration
-    selected from validation-based hyperparameter tuning.
-    """
-
-    model = HistGradientBoostingClassifier(
-        learning_rate=0.05,
-        max_iter=300,
-        max_leaf_nodes=31,
-        min_samples_leaf=30,
-        l2_regularization=1.0,
-        random_state=42,
-    )
-
-    model.fit(X_train, y_train)
-
-    return model
 
 
 def tune_xgboost(
@@ -232,22 +111,145 @@ def tune_xgboost(
 def train_tuned_xgboost(
     X_train: pd.DataFrame,
     y_train: pd.Series,
+    config: dict,
 ) -> XGBClassifier:
     """
-    Train the best XGBoost configuration selected
-    from validation-based hyperparameter tuning.
+    Train XGBoost using the configuration
+    selected during validation-based tuning.
     """
 
     model = XGBClassifier(
-        n_estimators=300,
-        max_depth=8,
-        learning_rate=0.05,
-        subsample=0.8,
-        colsample_bytree=0.8,
+        n_estimators=config["n_estimators"],
+        max_depth=config["max_depth"],
+        learning_rate=config["learning_rate"],
+        subsample=config["subsample"],
+        colsample_bytree=config["colsample_bytree"],
         objective="binary:logistic",
         eval_metric="logloss",
         random_state=42,
         n_jobs=-1,
+    )
+
+    model.fit(X_train, y_train)
+
+    return model
+
+
+def tune_catboost(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_validation: pd.DataFrame,
+    y_validation: pd.Series,
+) -> pd.DataFrame:
+    """
+    Evaluate a focused set of CatBoost configurations
+    on the validation dataset.
+    """
+
+    configurations = [
+        {
+            "name": "catboost_baseline",
+            "iterations": 500,
+            "depth": 6,
+            "learning_rate": 0.05,
+            "l2_leaf_reg": 3.0,
+        },
+        {
+            "name": "catboost_more_iterations",
+            "iterations": 700,
+            "depth": 6,
+            "learning_rate": 0.03,
+            "l2_leaf_reg": 3.0,
+        },
+        {
+            "name": "catboost_deeper",
+            "iterations": 500,
+            "depth": 7,
+            "learning_rate": 0.05,
+            "l2_leaf_reg": 3.0,
+        },
+        {
+            "name": "catboost_shallower",
+            "iterations": 700,
+            "depth": 5,
+            "learning_rate": 0.03,
+            "l2_leaf_reg": 3.0,
+        },
+        {
+            "name": "catboost_regularized",
+            "iterations": 500,
+            "depth": 6,
+            "learning_rate": 0.05,
+            "l2_leaf_reg": 8.0,
+        },
+    ]
+
+    results = []
+
+    for config in configurations:
+        model = CatBoostClassifier(
+            iterations=config["iterations"],
+            depth=config["depth"],
+            learning_rate=config["learning_rate"],
+            l2_leaf_reg=config["l2_leaf_reg"],
+            loss_function="Logloss",
+            eval_metric="AUC",
+            random_seed=42,
+            verbose=False,
+            allow_writing_files=False,
+        )
+
+        model.fit(X_train, y_train)
+
+        metrics = evaluate_model(
+            model,
+            X_validation,
+            y_validation,
+            threshold=0.5,
+        )
+
+        results.append(
+            {
+                "model": config["name"],
+                "iterations": config["iterations"],
+                "depth": config["depth"],
+                "learning_rate": config["learning_rate"],
+                "l2_leaf_reg": config["l2_leaf_reg"],
+                "roc_auc": metrics["roc_auc"],
+                "pr_auc": metrics["pr_auc"],
+                "precision": metrics["precision"],
+                "recall": metrics["recall"],
+                "f1_score": metrics["f1_score"],
+            }
+        )
+
+    return (
+        pd.DataFrame(results)
+        .sort_values(by="pr_auc", ascending=False)
+        .reset_index(drop=True)
+    )
+
+
+def train_tuned_catboost(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    config: dict,
+) -> CatBoostClassifier:
+    """
+    Train CatBoost using the configuration
+    selected during validation-based tuning.
+    """
+
+    model = CatBoostClassifier(
+        iterations=config["iterations"],
+        depth=config["depth"],
+        learning_rate=config["learning_rate"],
+        l2_leaf_reg=config["l2_leaf_reg"],
+        loss_function="Logloss",
+        eval_metric="AUC",
+        random_seed=42,
+        verbose=False,
+        allow_writing_files=False,
     )
 
     model.fit(X_train, y_train)

@@ -29,9 +29,9 @@ class FraudRiskPredictor:
     """
     Production inference wrapper for the saved fraud risk model.
 
-    The predictor loads the trained model and metadata once,
-    validates the required feature schema, and generates
-    fraud predictions for engineered transaction features.
+    The predictor loads the trained model and its metadata,
+    validates the production feature schema, and generates
+    fraud predictions.
     """
 
     def __init__(
@@ -50,11 +50,16 @@ class FraudRiskPredictor:
             self.metadata_path
         )
 
-        self.decision_threshold = float(
-            self.metadata.get(
-                "decision_threshold",
-                0.65,
+        if "decision_threshold" not in self.metadata:
+            raise ModelPredictionError(
+                "Production model metadata does not "
+                "contain a decision threshold."
             )
+
+        self.decision_threshold = float(
+            self.metadata[
+                "decision_threshold"
+            ]
         )
 
         self.required_features = list(
@@ -64,13 +69,24 @@ class FraudRiskPredictor:
             )
         )
 
+        if not self.required_features:
+            raise ModelPredictionError(
+                "Production model metadata does not "
+                "contain a valid feature schema."
+            )
+
         logger.info(
             "Fraud risk predictor initialized | "
             "model_name=%s | "
+            "model_type=%s | "
             "feature_count=%s | "
             "decision_threshold=%.2f",
             self.metadata.get(
                 "model_name",
+                "unknown",
+            ),
+            self.metadata.get(
+                "model_type",
                 "unknown",
             ),
             len(self.required_features),
@@ -82,7 +98,7 @@ class FraudRiskPredictor:
         X: pd.DataFrame,
     ) -> None:
         """
-        Validate that the prediction data contains the
+        Validate that prediction data contains all
         features required by the production model.
         """
 
@@ -113,7 +129,7 @@ class FraudRiskPredictor:
         X: pd.DataFrame,
     ) -> pd.DataFrame:
         """
-        Validate and order features according to the exact
+        Validate and order features according to the
         production model schema.
         """
 
@@ -128,13 +144,8 @@ class FraudRiskPredictor:
         X: pd.DataFrame,
     ) -> pd.DataFrame:
         """
-        Generate fraud predictions.
-
-        Returns:
-        fraud_probability
-        fraud_risk_score
-        predicted_fraud
-        risk_level
+        Generate fraud predictions using the saved
+        production model and metadata threshold.
         """
 
         try:
@@ -148,7 +159,9 @@ class FraudRiskPredictor:
 
             predictions = pd.DataFrame(
                 {
-                    "fraud_probability": fraud_probabilities,
+                    "fraud_probability": (
+                        fraud_probabilities
+                    ),
                     "fraud_risk_score": (
                         fraud_probabilities * 100
                     ),
@@ -170,8 +183,7 @@ class FraudRiskPredictor:
             ] = (
                 predictions[
                     "fraud_probability"
-                ]
-                .apply(
+                ].apply(
                     self._get_risk_level
                 )
             )
@@ -191,6 +203,9 @@ class FraudRiskPredictor:
             return predictions
 
         except FeatureValidationError:
+            raise
+
+        except ModelPredictionError:
             raise
 
         except Exception as error:
@@ -242,8 +257,8 @@ class FraudRiskPredictor:
         fraud_probability: float,
     ) -> str:
         """
-        Convert fraud probability into an interpretable
-        operational risk level.
+        Convert fraud probability into an
+        interpretable operational risk level.
         """
 
         if fraud_probability >= 0.8:
@@ -259,3 +274,9 @@ class FraudRiskPredictor:
             return "low"
 
         return "minimal"
+
+# ============================================================
+# PRODUCTION PREDICTOR INSTANCE
+# ============================================================
+
+predictor = FraudRiskPredictor()
