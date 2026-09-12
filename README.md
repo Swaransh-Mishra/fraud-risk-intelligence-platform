@@ -2,6 +2,8 @@
 
 > An end-to-end machine learning and MLOps-oriented platform for transaction fraud detection, risk scoring, model evaluation, API serving, and operational monitoring.
 
+<p align="center">
+
 [![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Interface-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -9,173 +11,188 @@
 [![Tests](https://img.shields.io/badge/Tests-82%20passed-success)](#automated-testing)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey)](#license)
 
----
+</p>
 
-## Table of Contents
+<p align="center">
 
-- [Fraud Risk Intelligence Platform](#fraud-risk-intelligence-platform)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Business Problem](#business-problem)
-  - [Project Objective](#project-objective)
-  - [Why This Project](#why-this-project)
-  - [Data \& Feature Engineering](#data--feature-engineering)
-    - [Dataset](#dataset)
-  - [Feature Engineering](#feature-engineering)
-    - [Feature Groups](#feature-groups)
-      - [Transaction \& Temporal Signals](#transaction--temporal-signals)
-      - [Customer Behaviour](#customer-behaviour)
-      - [Customer Amount Behaviour](#customer-amount-behaviour)
-      - [Customer Recent Activity](#customer-recent-activity)
-      - [Terminal Behaviour](#terminal-behaviour)
-      - [Terminal Fraud History](#terminal-fraud-history)
-      - [Terminal Recent Activity](#terminal-recent-activity)
-  - [Chronological Data Splitting](#chronological-data-splitting)
-  - [Modeling Strategy](#modeling-strategy)
-  - [Model Development Workflow](#model-development-workflow)
-  - [Final Model Results](#final-model-results)
-  - [Final Champion](#final-champion)
-  - [Validation vs Final Test](#validation-vs-final-test)
-  - [Final Test Confusion Matrix](#final-test-confusion-matrix)
-  - [Production System \& MLOps](#production-system--mlops)
-  - [Production Architecture](#production-architecture)
-  - [Repository Structure](#repository-structure)
-  - [Visual Showcase](#visual-showcase)
-    - [Application Interface](#application-interface)
-      - [Platform Overview](#platform-overview)
-      - [Fraud Prediction](#fraud-prediction)
-      - [Batch Prediction](#batch-prediction)
-      - [Monitoring](#monitoring)
-  - [Model Evaluation Visualizations](#model-evaluation-visualizations)
-    - [Model Comparison](#model-comparison)
-    - [Threshold Trade-off](#threshold-trade-off)
-    - [Business Cost Analysis](#business-cost-analysis)
-  - [Technical Stack](#technical-stack)
-  - [Engineering \& ML Practices](#engineering--ml-practices)
-    - [Chronological Evaluation](#chronological-evaluation)
-    - [Leakage-Aware Feature Engineering](#leakage-aware-feature-engineering)
-    - [Validation-Driven Model Selection](#validation-driven-model-selection)
-    - [Frozen Final Holdout](#frozen-final-holdout)
-    - [Reusable Application Components](#reusable-application-components)
-    - [Metadata-Driven Inference](#metadata-driven-inference)
-    - [Automated Testing](#automated-testing)
-    - [Containerized Serving](#containerized-serving)
-  - [Assumptions \& Limitations](#assumptions--limitations)
-    - [Sequential Historical Information](#sequential-historical-information)
-    - [Analytical Business Costs](#analytical-business-costs)
-  - [Deployment](#deployment)
-  - [Running Locally](#running-locally)
-    - [1. Clone the Repository](#1-clone-the-repository)
-    - [2. Create a Virtual Environment](#2-create-a-virtual-environment)
-    - [3. Install Dependencies](#3-install-dependencies)
-    - [4. Start the FastAPI Backend](#4-start-the-fastapi-backend)
-    - [5. Verify the Backend](#5-verify-the-backend)
-    - [6. Explore the API with Swagger](#6-explore-the-api-with-swagger)
-    - [7. Start the Streamlit Frontend](#7-start-the-streamlit-frontend)
-    - [8. Use the Platform](#8-use-the-platform)
-    - [9. Run the Test Suite](#9-run-the-test-suite)
-    - [Local Runtime Architecture](#local-runtime-architecture)
-    - [Complete Local Startup](#complete-local-startup)
-    - [Development Notes](#development-notes)
-  - [Swaransh Mishra](#swaransh-mishra)
-    - [Connect with Me](#connect-with-me)
-  - [License](#license)
+<a href="https://fraud-risk-intelligence-platform-aphxdzhavgtqbxxkxxxztb.streamlit.app/">
+  <img src="https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" alt="Live Streamlit Demo">
+</a>
+
+<a href="https://fraud-risk-intelligence-platform.onrender.com/docs">
+  <img src="https://img.shields.io/badge/Live%20API-Swagger-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="Live API Swagger">
+</a>
+
+<a href="https://github.com/Swaransh-Mishra/fraud-risk-intelligence-platform">
+  <img src="https://img.shields.io/badge/Source-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Repository">
+</a>
+
+</p>
 
 ---
 
-## Overview
+## Project Snapshot
 
-The **Fraud Risk Intelligence Platform** is an end-to-end machine learning system designed to identify potentially fraudulent financial transactions and convert model predictions into operational risk decisions.
+**Fraud Risk Intelligence Platform** is a production-oriented machine learning and MLOps project that transforms transaction-level behavioural signals into fraud probabilities, risk scores, and operational decisions.
 
-The project goes beyond model training by implementing the broader machine learning lifecycle:
+The platform covers the broader machine learning lifecycle — from **historical transaction data and feature engineering through model development, validation, threshold selection, model persistence, API serving, interactive prediction, logging, monitoring, and deployment**.
 
-**Data → Feature Engineering → Model Development → Validation → Threshold Selection → Business Cost Analysis → Model Serving → Monitoring**
+### At a Glance
 
-The platform combines behavioural transaction features, customer history, terminal history, model evaluation, probability-based ensemble prediction, API serving, interactive visualization, prediction logging, drift detection, and automated testing into a single portfolio-scale system.
-
-The project is designed with a **machine learning + MLOps-oriented architecture**, separating model-development workflows from reusable application components used for inference and monitoring.
-
----
-
-## Business Problem
-
-Fraud detection is a highly imbalanced classification problem where fraudulent transactions represent only a small proportion of total transaction activity.
-
-A useful fraud-risk system therefore needs to do more than maximize accuracy.
-
-It should be able to:
-
-- identify suspicious transactions
-- estimate fraud probability
-- support configurable decision thresholds
-- balance false positives against false negatives
-- evaluate business-cost trade-offs
-- preserve chronological evaluation
-- expose predictions through an API
-- support batch transaction scoring
-- record prediction activity
-- monitor model behaviour and data drift
-
-The platform addresses these requirements through a complete machine learning workflow built around transaction-level behavioural signals.
+| Component | Final Configuration |
+| --- | --- |
+| Dataset | 1,754,155 transactions |
+| Fraud Cases | 14,681 |
+| Fraud Prevalence | ~0.84% |
+| Model Features | 23 |
+| Final Champion | RandomizedSearch XGBoost + RandomizedSearch CatBoost |
+| Ensemble Weights | XGBoost 0.3 · CatBoost 0.7 |
+| Production Threshold | 0.70 |
+| Validation PR-AUC | 0.746233 |
+| Validation F1-score | 0.699688 |
+| Final Test PR-AUC | 0.584143 |
+| Final Test Recall | 0.622693 |
+| Final Test F1-score | 0.537718 |
+| Automated Tests | 82 passed |
 
 ---
 
-## Project Objective
+## Key Results
 
-The primary objective is to build a realistic fraud-risk platform that demonstrates how a machine learning model can move from historical transaction data to an operational prediction service.
+### Final Model
 
-The system focuses on:
+**RandomizedSearch XGBoost + RandomizedSearch CatBoost**
 
-- **Fraud probability prediction**
-- **Behavioural feature engineering**
+A weighted probability ensemble combining the tuned XGBoost and CatBoost models with weights of **0.3** and **0.7**, respectively.
+
+The production decision threshold was selected using the validation workflow and frozen at **0.70** before evaluation on the untouched September 2018 test period.
+
+### Final Holdout Performance
+
+| Metric | September 2018 Test |
+| --- | ---: |
+| PR-AUC | **0.584143** |
+| ROC-AUC | **0.972573** |
+| Precision | **0.473150** |
+| Recall | **0.622693** |
+| F1-score | **0.537718** |
+
+The September 2018 period represents the **unseen temporal holdout**, providing a final evaluation of the frozen model configuration on later transaction data.
+
+---
+
+## What the Platform Delivers
+
+- **Fraud probability scoring** for individual transactions
+- **Risk scoring and risk-level decisions**
+- **Batch transaction prediction**
 - **Chronological model validation**
-- **Imbalanced classification evaluation**
-- **Threshold selection**
+- **Imbalanced-class evaluation using PR-AUC, precision, recall, and F1**
+- **Probability-weighted ensemble prediction**
+- **Configurable decision thresholds**
 - **Business-cost analysis**
-- **Probability-weighted ensemble modeling**
-- **Model artifact and metadata management**
-- **FastAPI model serving**
-- **Streamlit-based interaction**
-- **Prediction logging**
-- **Data drift detection**
-- **Performance monitoring**
-- **Automated testing**
-- **Dockerized API deployment**
+- **Reusable FastAPI inference service**
+- **Interactive Streamlit application**
+- **Prediction logging and operational monitoring**
+- **Model and metadata persistence**
+- **Dockerized API serving**
+- **Automated application testing**
 
 ---
 
 ## Why This Project
 
-The project is intentionally structured as more than a standalone machine learning notebook.
+Fraud detection is a highly imbalanced classification problem where fraudulent transactions represent only a small proportion of total transaction activity.
 
-The objective is to demonstrate the complete path from:
+A useful fraud-risk system therefore needs to do more than maximize accuracy. It should identify suspicious transactions while providing probability-based risk estimates, configurable decision thresholds, and operational visibility into model predictions.
 
-```text
-Historical Transactions
-        ↓
-Data & Feature Engineering
-        ↓
-Model Development
-        ↓
-Validation & Model Selection
-        ↓
-Decision Threshold
-        ↓
-Business Evaluation
-        ↓
-Persisted Model
-        ↓
-API Serving
-        ↓
-Interactive Application
-        ↓
-Logging & Monitoring
-```
+This project was built to demonstrate the complete transition from **machine learning experimentation to a reusable fraud-risk application**, combining predictive modeling with API serving, interactive application workflows, prediction logging, monitoring, testing, and deployment.
+
+---
+
+## Business Problem
+
+A fraud detection system needs to balance two competing types of errors:
+
+- **False positives** — legitimate transactions incorrectly flagged for investigation
+- **False negatives** — fraudulent transactions missed by the model
+
+Because fraud is rare, accuracy alone can provide a misleading view of model quality.
+
+The platform therefore emphasizes:
+
+- **PR-AUC** for ranking performance under class imbalance
+- **Precision and recall** for fraud detection effectiveness
+- **F1-score** for threshold-dependent performance
+- **False-positive and false-negative volumes**
+- **Decision-threshold analysis**
+- **Business-cost analysis**
+
+The final system converts model probabilities into operational risk decisions through a frozen production threshold of **0.70**.
+
+---
+
+## Product Showcase
+
+The platform is exposed through an interactive **Streamlit** application backed by a reusable **FastAPI** inference service.
+
+The interface provides individual transaction scoring, batch prediction, and monitoring workflows while keeping model inference inside the backend service.
+
+### Platform Overview
+
+The main interface provides a consolidated view of the fraud-risk platform, including the active model configuration, prediction activity, and operational status.
+
+<p align="center">
+  <img src="assets/plots/streamlit_overview.png" alt="Fraud Risk Intelligence Platform — Streamlit Overview" width="95%">
+</p>
+
+### Fraud Prediction
+
+The fraud prediction interface accepts the finalized **23-feature modeling schema** and returns a fraud probability, risk score, prediction, and risk level.
+
+<p align="center">
+  <img src="assets/plots/streamlit_fraud_prediction.png" alt="Fraud Risk Intelligence Platform — Fraud Prediction" width="95%">
+</p>
+
+### Batch Prediction
+
+The batch workflow supports CSV-based transaction scoring and returns fraud probabilities and risk decisions for multiple transactions.
+
+<p align="center">
+  <img src="assets/plots/streamlit_batch_prediction.png" alt="Fraud Risk Intelligence Platform — Batch Prediction" width="95%">
+</p>
+
+### Monitoring
+
+The monitoring interface provides visibility into prediction activity and available operational monitoring information.
+
+<p align="center">
+  <img src="assets/plots/streamlit_monitoring.png" alt="Fraud Risk Intelligence Platform — Monitoring" width="95%">
+</p>
+
+---
+
+## ML Development & Model Selection
+
+The machine learning workflow was designed around chronological evaluation and progressive model development.
+
+Finalized engineered datasets are prepared using a consistent modeling schema, followed by baseline benchmarking, candidate model evaluation, ensemble experimentation, hyperparameter tuning, threshold analysis, and final model selection.
+
+The validation period is used for model and decision-making throughout development, while the September 2018 period remains an untouched final holdout.
+
+<p align="center">
+  <img src="assets/plots/ml_development_model_selection.png" alt="ML Development and Model Selection Workflow" width="98%">
+</p>
+
+The final configuration combines the tuned models that provided the strongest validation performance and is persisted as a reusable model artifact with its associated metadata.
+
+---
+
 ## Data & Feature Engineering
 
 ### Dataset
 
-The platform is developed using a transaction-level fraud dataset containing approximately **1.75 million transactions** across a six-month period.
+The platform is built using a transaction-level fraud dataset containing **1,754,155 transactions** across a six-month period from **April through September 2018**.
 
 | Attribute | Value |
 | --- | ---: |
@@ -187,15 +204,15 @@ The platform is developed using a transaction-level fraud dataset containing app
 | Time Period | April–September 2018 |
 | Raw Columns | 9 |
 
-The low fraud prevalence creates a highly imbalanced classification problem, where a model can achieve high overall accuracy while still performing poorly on the minority fraud class.
-
-For this reason, the project emphasizes **precision-recall behaviour, PR-AUC, F1-score, recall, false positives, false negatives, and business cost** rather than relying on accuracy alone.
+The low fraud prevalence creates a highly imbalanced classification problem. Consequently, model evaluation focuses on metrics that better reflect minority-class performance rather than accuracy alone.
 
 ---
 
 ## Feature Engineering
 
-The final model uses **23 model features** combining transaction-level information with historical customer and terminal behaviour.
+The feature engineering process transforms transaction history into behavioural signals describing the current transaction, customer behaviour, and terminal behaviour.
+
+The finalized engineered dataset contains **31 columns including the target**, while the final modeling schema uses **23 features** for prediction.
 
 ### Feature Groups
 
@@ -206,7 +223,7 @@ The final model uses **23 model features** combining transaction-level informati
 - `day_of_week`
 - `is_weekend`
 
-These features capture the characteristics and timing of the current transaction.
+These features describe the transaction amount and its temporal context.
 
 #### Customer Behaviour
 
@@ -216,14 +233,14 @@ These features capture the characteristics and timing of the current transaction
 - `customer_amount_std`
 - `time_since_customer_tx`
 
-These features describe the customer's historical transaction behaviour.
+These features capture the customer's historical transaction behaviour.
 
 #### Customer Amount Behaviour
 
 - `customer_amount_deviation`
 - `customer_amount_ratio`
 
-These features compare the current transaction against the customer's historical spending pattern.
+These signals compare the current transaction amount with the customer's historical spending behaviour.
 
 #### Customer Recent Activity
 
@@ -240,7 +257,7 @@ These features capture short-term transaction frequency and spending activity.
 - `terminal_max_amount`
 - `terminal_amount_std`
 
-These features represent the historical behaviour of the terminal associated with the transaction.
+These features describe historical transaction behaviour associated with the terminal.
 
 #### Terminal Fraud History
 
@@ -261,186 +278,616 @@ These features capture recent transaction activity at the terminal level.
 
 ## Chronological Data Splitting
 
-Fraud detection is inherently time-dependent because behavioural features are constructed from transaction history.
+Because fraud behaviour and historical features are time-dependent, the project uses a chronological train, validation, and final holdout strategy rather than a random split.
 
-Instead of randomly splitting the dataset, the project uses a **chronological train / validation / test strategy**.
+| Dataset | Period | Records | Purpose |
+| --- | --- | ---: | --- |
+| Training | April–July 2018 | 1,169,723 | Model development |
+| Validation | August 2018 | 296,559 | Model selection and threshold analysis |
+| Final Test | September 2018 | 287,873 | Unseen temporal holdout |
 
-```text
-April ───────── July │ August │ September
-        Training     │  Valid.│   Test
-                     │        │
-              Model Development
-                              │
-                         Final Holdout
-```
-## Modeling Strategy
+The **September 2018 test period is kept untouched** during model development, ensemble selection, and threshold selection.
 
-The modeling workflow evaluates fraud detection models progressively, starting with a baseline and moving toward stronger non-linear models and tuned ensemble configurations.
-
-The objective is not simply to maximize accuracy, but to identify a model that provides strong fraud ranking and classification performance under severe class imbalance while remaining suitable for operational decision-making.
+This setup provides a more realistic evaluation of how the finalized configuration performs on later transaction data.
 
 ---
 
-## Model Development Workflow
+## Model Selection
 
-```text
-Logistic Regression Baseline
-          ↓
-Tree-Based Candidate Models
-          ↓
-Model Comparison
-          ↓
-Hyperparameter Tuning
-          ↓
-Tuned XGBoost + Tuned CatBoost
-          ↓
-Probability-Weighted Ensembles
-          ↓
-Threshold Analysis
-          ↓
-Business-Cost & Robustness Analysis
-          ↓
-Final Champion
-```
-## Final Model Results
+Six individual classification models were evaluated as candidate approaches:
 
-After the model, ensemble configuration, and production threshold were selected using the validation period, the final configuration was frozen and evaluated on the **September 2018 test set**.
+1. Logistic Regression
+2. Random Forest
+3. HistGradientBoosting
+4. XGBoost
+5. LightGBM
+6. CatBoost
 
-The test set was not used during model selection or threshold optimization.
+Because the dataset is highly imbalanced, candidate models were compared using **PR-AUC** as the primary ranking metric, supported by precision, recall, and F1-score.
+
+---
+
+## Ensemble Experiments
+
+Individual model performance was followed by probability-based ensemble experiments to determine whether combining complementary gradient-boosting models could improve validation performance.
+
+The evaluated combinations included:
+
+- XGBoost + CatBoost
+- XGBoost + LightGBM
+- CatBoost + LightGBM
+- XGBoost + CatBoost + LightGBM
+- CatBoost + LightGBM + HistGradientBoosting
+- Tuned and weighted ensemble variants
+
+The ensemble experiments operate on predicted fraud probabilities rather than hard class predictions, allowing the component models to contribute different levels of influence.
+
+---
+
+## Hyperparameter Tuning
+
+The strongest ensemble candidates were further refined using randomized hyperparameter search.
+
+The final ensemble uses:
+
+- **RandomizedSearch XGBoost**
+- **RandomizedSearch CatBoost**
+- **XGBoost weight:** 0.3
+- **CatBoost weight:** 0.7
+
+This configuration produced the strongest validation performance within the evaluated modeling workflow and was selected as the final champion.
 
 ---
 
 ## Final Champion
 
-**RandomizedSearch XGBoost + RandomizedSearch CatBoost**
+### RandomizedSearch XGBoost + RandomizedSearch CatBoost
 
-| Configuration | Value |
-| --- | --- |
-| XGBoost Weight | 0.3 |
-| CatBoost Weight | 0.7 |
-| Production Threshold | 0.70 |
-| Model Type | Weighted Probability Ensemble |
-| Model Features | 23 |
+The final model is a weighted probability ensemble:
 
-The ensemble produces a continuous fraud probability and applies the frozen production threshold to generate the final fraud decision.
+```text
+Final Fraud Probability
+    = 0.3 × XGBoost Probability
+    + 0.7 × CatBoost Probability
+```
+## Threshold Selection
+
+The decision threshold was evaluated on the validation period to understand the trade-off between precision, recall, and F1-score.
+
+The final production threshold was set to:
+
+**0.70**
+
+The threshold was frozen before evaluating the September 2018 holdout.
+
+A separate business-cost analysis was also performed using the project assumptions of:
+
+- **False positive cost:** 5
+- **False negative cost:** 100
+
+The lowest estimated business cost occurred at a lower threshold of **0.05**. This analysis is treated as supporting sensitivity analysis rather than the production threshold, which remains **0.70** based on the validation predictive-performance workflow.
 
 ---
 
-## Validation vs Final Test
+## Validation Performance
 
-The difference between validation and final test performance provides an indication of how the selected configuration generalizes to a later time period.
+The final champion achieved the following validation results:
 
-| Metric | Validation | September Test |
-| --- | ---: | ---: |
-| PR-AUC | 0.746233 | 0.584143 |
-| ROC-AUC | — | 0.972573 |
-| Precision | 0.729565 | 0.473150 |
-| Recall | 0.672162 | 0.622693 |
-| F1-score | 0.699688 | 0.537718 |
+| Metric | Validation |
+| --- | ---: |
+| PR-AUC | **0.746233** |
+| F1-score | **0.699688** |
 
-The September test results are lower than the validation results, particularly for precision and PR-AUC.
+These results were used during model and threshold selection.
 
-This can occur in a time-based fraud detection problem because the test period represents a later transaction distribution that was not used for model selection.
+The final model configuration, ensemble weighting, and production threshold were then frozen before evaluating the later September 2018 holdout period.
 
-The final test results should therefore be interpreted as an **unseen temporal holdout evaluation**, not as a continuation of validation tuning.
+---
+
+## Final Holdout Evaluation
+
+The **September 2018** dataset was not used for model selection, hyperparameter tuning, ensemble weighting, or threshold selection.
+
+It was used only for final evaluation of the frozen configuration.
+
+| Metric | September 2018 Test |
+| --- | ---: |
+| PR-AUC | **0.584143** |
+| ROC-AUC | **0.972573** |
+| Precision | **0.473150** |
+| Recall | **0.622693** |
+| F1-score | **0.537718** |
+
+The difference between validation and holdout performance reflects the challenge of maintaining fraud-detection performance on later unseen transaction activity.
 
 ---
 
 ## Final Test Confusion Matrix
 
-At the frozen production threshold of **0.70**, the final September test results were:
+At the frozen **0.70** decision threshold, the September 2018 holdout produced:
 
-| Outcome | Count |
-| --- | ---: |
-| True Negatives | 283,560 |
-| False Positives | 1,766 |
-| False Negatives | 961 |
-| True Positives | 1,586 |
+| | Predicted Legitimate | Predicted Fraud |
+| --- | ---: | ---: |
+| **Actual Legitimate** | 283,560 | 1,766 |
+| **Actual Fraud** | 961 | 1,586 |
 
-The model correctly identifies a substantial portion of fraudulent transactions while limiting the number of legitimate transactions classified as fraud.
+This corresponds to:
 
-```text
-                    Predicted
-                 Non-Fraud    Fraud
-              ┌────────────┬──────────┐
-Actual Fraud  │    961     │   1,586  │
-              │    FN      │    TP    │
-              ├────────────┼──────────┤
-Actual Legit. │  283,560   │   1,766  │
-              │    TN      │    FP    │
-              └────────────┴──────────┘
-```
-## Production System & MLOps
+- **True Negatives:** 283,560
+- **False Positives:** 1,766
+- **False Negatives:** 961
+- **True Positives:** 1,586
 
-The project is structured as a production-oriented machine learning application rather than a notebook-only model.
+The confusion matrix provides the operational view behind the final precision and recall results.
 
-The system separates **model development**, **model serving**, **application interaction**, and **operational monitoring** into reusable components.
+---
+## Model Evaluation Visualizations
+
+The following visualizations provide the analytical evidence behind model comparison, feature contribution, threshold selection, business-cost analysis, and final holdout performance.
+
+### Model Comparison
+
+PR-AUC is used as the primary comparison metric because the dataset contains a highly imbalanced fraud class.
+
+<p align="center">
+  <img src="assets/plots/model_comparison_pr_auc.png" alt="Model Comparison by PR-AUC" width="90%">
+</p>
+
+The comparison includes the evaluated individual models and ensemble configurations used during model development.
 
 ---
 
+### Final Champion Feature Importance
+
+Feature importance from the final champion highlights the behavioural and transaction signals that contributed most strongly to the model's predictions.
+
+<p align="center">
+  <img src="assets/plots/final_champion_feature_importance.png" alt="Final Champion Feature Importance" width="90%">
+</p>
+
+The analysis uses the finalized **23 model features**, providing an interpretable view of the signals used by the deployed model.
+
+---
+
+### Threshold Trade-off
+
+The threshold analysis shows how changing the fraud decision threshold affects predictive performance.
+
+<p align="center">
+  <img src="assets/plots/final_champion_threshold_tradeoff.png" alt="Fraud Decision Threshold Trade-off" width="90%">
+</p>
+
+The production threshold of **0.70** was selected through the validation predictive-performance workflow and frozen before final holdout evaluation.
+
+---
+
+### Business Cost Analysis
+
+A separate business-cost analysis evaluates the impact of false positives and false negatives under the project's assumed costs.
+
+<p align="center">
+  <img src="assets/plots/business_cost_analysis.png" alt="Business Cost Analysis" width="90%">
+</p>
+
+Using the assumptions of **5 cost units for a false positive** and **100 cost units for a false negative**, the lowest estimated cost occurs at a threshold of **0.05**.
+
+This analysis is used as supporting sensitivity analysis rather than replacing the production threshold selected through predictive validation.
+
+---
+
+### Final Holdout Confusion Matrix
+
+The confusion matrix shows the actual classification outcomes on the untouched September 2018 test period at the frozen **0.70** threshold.
+
+<p align="center">
+  <img src="assets/plots/confusion_matrix.png" alt="Final Holdout Confusion Matrix" width="80%">
+</p>
+
+The holdout contains:
+
+- **True Negatives:** 283,560
+- **False Positives:** 1,766
+- **False Negatives:** 961
+- **True Positives:** 1,586
+
+---
+
+### Precision-Recall Curve
+
+The precision-recall curve provides a threshold-independent view of fraud detection performance under severe class imbalance.
+
+<p align="center">
+  <img src="assets/plots/precision_recall_curve.png" alt="Precision-Recall Curve" width="85%">
+</p>
+
+The final champion achieved a **0.584143 PR-AUC** on the September 2018 holdout period.
+
+---
+
+## Production System & MLOps
+
+The platform extends beyond model development into a reusable inference and operational workflow.
+
+The finalized model configuration is persisted with its metadata and loaded by the FastAPI service for consistent inference across application clients.
+
+Key operational capabilities include:
+
+- Persisted model artifacts and metadata
+- Reusable API-based inference
+- Individual transaction prediction
+- Batch prediction
+- Prediction logging
+- Operational monitoring
+- Model configuration visibility
+- Dockerized API serving
+- Automated application testing
+- Cloud deployment
+
 ## Production Architecture
 
-The platform separates model development from reusable inference, application, and monitoring components.
+The production architecture separates the finalized machine learning workflow from the runtime inference layer.
 
-![Production Architecture](assets/plots/production_architecture.png)
+<p align="center">
+  <img src="assets/plots/production_architecture.png" alt="Production Architecture" width="98%">
+</p>
 
+The deployed system connects the finalized model workflow to the FastAPI inference service and application clients, with prediction logging and monitoring supporting the operational lifecycle.
+
+## Deployment & Runtime Architecture
+
+The application is deployed as separate frontend and backend services.
+
+<p align="center">
+  <img src="assets/plots/deployment_runtime_architecture.png" alt="Deployment and Runtime Architecture" width="98%">
+</p>
+
+The Streamlit frontend communicates with the containerized FastAPI backend through HTTPS API requests, while the backend loads the persisted model artifacts for inference.
+
+## API Serving
+
+The FastAPI service exposes the model through HTTP endpoints for reusable inference.
+
+### Core Endpoints
+
+| Endpoint | Purpose |
+| --- | --- |
+| `/health` | Service health check |
+| `/predict` | Individual transaction prediction |
+| `/predict-batch` | Batch transaction prediction |
+| `/model-info` | Active model and configuration information |
+| `/docs` | Interactive Swagger API documentation |
+
+The API returns structured prediction information including fraud probability, risk score, prediction, and risk level.
+
+---
+
+## Model Persistence
+
+The finalized model configuration is stored as reusable artifacts rather than being recreated during application startup.
+
+The deployment uses:
+
+- `fraud_risk_model.joblib` — persisted model artifact
+- `model_metadata.json` — model configuration and metadata
+
+The metadata records information required by the inference service, including the finalized modeling schema, decision threshold, and relevant training/evaluation information.
+
+---
+
+## Operational Monitoring
+
+Prediction logging provides an operational record of inference activity that can be used for monitoring and later analysis.
+
+The monitoring workflow is designed around signals such as:
+
+- Prediction volume
+- Fraud prediction rate
+- Prediction probabilities
+- Risk-level distribution
+- Recent prediction activity
+
+This provides a foundation for monitoring model behaviour after deployment and identifying potential changes in incoming prediction patterns.
+
+---
+
+
+## Technical Stack
+
+### Machine Learning & Data
+
+- **Python 3.11**
+- **pandas** — data preparation and feature engineering
+- **NumPy** — numerical operations
+- **scikit-learn** — preprocessing, model evaluation, hyperparameter search, and supporting ML utilities
+- **XGBoost** — gradient-boosting model
+- **CatBoost** — gradient-boosting model
+- **joblib** — model artifact persistence
+
+### Application & API
+
+- **FastAPI** — model inference API
+- **Pydantic** — request and response validation
+- **Streamlit** — interactive application interface
+- **Uvicorn** — ASGI server
+
+### Deployment & Engineering
+
+- **Docker** — containerized API serving
+- **Render** — FastAPI cloud deployment
+- **Streamlit Cloud** — frontend deployment
+- **Git & GitHub** — source control and project versioning
+- **pytest** — automated testing
+
+---
+
+## Engineering & ML Practices
+
+The project emphasizes reproducibility, separation of concerns, and validation throughout the machine learning lifecycle.
+
+### Machine Learning
+
+- Chronological train/validation/test splitting
+- Strict separation of the final temporal holdout
+- Imbalanced-class evaluation using PR-AUC
+- Multiple candidate model benchmarks
+- Probability-based ensemble experimentation
+- Randomized hyperparameter search
+- Validation-based threshold analysis
+- Separate business-cost sensitivity analysis
+- Frozen model configuration before final holdout evaluation
+
+### Software Engineering
+
+- Reusable inference code outside the notebook environment
+- Separation between model development and application inference
+- Persisted model artifacts and metadata
+- API request/response validation
+- Configurable deployment settings
+- Dockerized backend service
+- Automated test coverage
+- Version-controlled source code
+
+### MLOps-Oriented Practices
+
+- Model artifact persistence
+- Metadata persistence
+- API-based model serving
+- Containerized deployment
+- Prediction logging
+- Operational monitoring
+- Cloud deployment
+- Automated testing
+
+These practices provide a practical MLOps-oriented workflow without treating the project as a full-scale production system.
+
+---
+
+## Assumptions & Limitations
+
+### Modeling Assumptions
+
+The project assumes that historical customer and terminal transaction behaviour provides useful signals for identifying anomalous transactions.
+
+The production decision threshold is fixed at **0.70** based on the validation workflow. Different organizations may require different thresholds depending on investigation capacity, fraud losses, customer impact, and operational requirements.
+
+### Business-Cost Assumptions
+
+The supporting cost analysis assumes:
+
+- **False positive cost:** 5
+- **False negative cost:** 100
+
+These values are illustrative business assumptions rather than observed financial costs from a real organization.
+
+### Data Limitations
+
+- The dataset represents a defined historical transaction period rather than continuously changing live transaction data.
+- Historical behavioural features may not fully represent future fraud patterns.
+- Model performance can change when transaction behaviour, fraud strategies, or operational conditions shift.
+- The final September 2018 holdout provides temporal validation but does not guarantee future real-world performance.
+
+### Deployment Limitations
+
+- The deployed service is intended as a portfolio-scale demonstration of an ML inference workflow.
+- Cloud infrastructure behaviour, including cold starts on free-tier services, can affect response latency.
+- Monitoring provides an operational foundation but does not represent a complete enterprise observability stack.
+- No claim is made that the system is ready for direct deployment into a regulated financial production environment without additional security, scalability, governance, and monitoring controls.
+
+---
+
+## Deployment
+
+The platform is deployed using separate frontend and backend services.
+
+### Backend Deployment
+
+The FastAPI inference service is containerized with Docker and deployed on Render.
+
+**Live API:**
+https://fraud-risk-intelligence-platform.onrender.com
+
+**Swagger API Documentation:**
+https://fraud-risk-intelligence-platform.onrender.com/docs
+
+**Health Check:**
+https://fraud-risk-intelligence-platform.onrender.com/health
+
+The backend loads the persisted model artifact and exposes the inference endpoints used by the application.
+
+### Frontend Deployment
+
+The Streamlit application is deployed separately on Streamlit Community Cloud.
+
+**Live Application:**
+https://fraud-risk-intelligence-platform-aphxdzhavgtqbxxkxxxztb.streamlit.app/
+
+The Streamlit frontend communicates with the deployed FastAPI backend through HTTPS API requests.
+
+The backend URL is configured through the Streamlit deployment configuration using `API_BASE_URL`.
+
+---
+
+## Repository
+
+The complete source code and project assets are available on GitHub.
+
+**GitHub Repository:**
+https://github.com/Swaransh-Mishra/fraud-risk-intelligence-platform
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/Swaransh-Mishra/fraud-risk-intelligence-platform.git
+cd fraud-risk-intelligence-platform
+```
+
+### Create a Virtual Environment
+
+#### Windows
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+#### macOS / Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Running Locally
+
+The application consists of a FastAPI backend and a Streamlit frontend.
+
+### Start the FastAPI Backend
+
+From the project root:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+The API will be available at:
+
+```text
+http://localhost:8000
+```
+
+Swagger documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+Health check:
+
+```text
+http://localhost:8000/health
+```
+
+### Start the Streamlit Frontend
+
+Open a separate terminal, activate the same virtual environment, and run:
+
+```bash
+streamlit run streamlit/app.py
+```
+
+The Streamlit application will be available at:
+
+```text
+http://localhost:8501
+```
+
+The local Streamlit application communicates with the local FastAPI backend for model inference.
+
+---
+
+## Automated Testing
+
+The project includes an automated test suite covering core application and inference behaviour.
+
+Run the tests with:
+
+```bash
+pytest -q
+```
+
+Current test status:
+
+```text
+82 passed
+```
+
+Dependency consistency can also be checked with:
+
+```bash
+pip check
+```
+
+---
+
+## Docker API Serving
+
+The FastAPI backend can be built and served as a Docker container.
+
+### Build the Docker Image
+
+```bash
+docker build -t fraud-risk-intelligence-platform .
+```
+
+### Run the Container
+
+```bash
+docker run -p 8000:8000 fraud-risk-intelligence-platform
+```
+
+The containerized API will then be available at:
+
+```text
+http://localhost:8000
+```
+
+Swagger documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+Docker is used to provide a reproducible environment for API serving and cloud deployment.
+
+---
 
 ## Repository Structure
 
 ```text
-Fraud-Risk-Intelligence-Platform/
+fraud-risk-intelligence-platform/
 │
 ├── app/
 │   ├── api/
-│   │   └── schemas.py
-│   │
 │   ├── core/
-│   │   ├── config.py
-│   │   ├── exceptions.py
-│   │   ├── handlers.py
-│   │   ├── logging.py
-│   │   └── ...
-│   │
 │   ├── data_loader/
-│   │   ├── loader.py
-│   │   └── split.py
-│   │
 │   ├── evaluation/
-│   │   ├── business.py
-│   │   ├── error_analysis.py
-│   │   ├── explainability.py
-│   │   ├── metrics.py
-│   │   ├── model_comparison.py
-│   │   └── thresholds.py
-│   │
 │   ├── features/
-│   │   ├── customer.py
-│   │   ├── pipeline.py
-│   │   ├── preprocessing.py
-│   │   ├── temporal.py
-│   │   └── terminal.py
-│   │
 │   ├── inference/
-│   │   └── predictor.py
-│   │
 │   ├── models/
-│   │   ├── advanced.py
-│   │   ├── baseline.py
-│   │   ├── ensemble.py
-│   │   ├── final_model.py
-│   │   ├── model_io.py
-│   │   └── tuning.py
-│   │
 │   ├── monitoring/
-│   │   ├── analytics.py
-│   │   ├── drift.py
-│   │   ├── logging.py
-│   │   └── performance.py
-│   │
-│   └── tracking/
-│       └── experiment.py
+│   ├── tracking/
+│   └── main.py
 │
 ├── artifacts/
+│   ├── experiments/
 │   ├── fraud_risk_model.joblib
 │   └── model_metadata.json
 │
@@ -448,393 +895,35 @@ Fraud-Risk-Intelligence-Platform/
 │   └── plots/
 │
 ├── data/
-│   ├── raw/
 │   ├── processed/
+│   ├── raw/
 │   └── sample/
 │
 ├── docs/
 │   ├── docs/
-│   │   └── project_definition.md
 │   └── methodology/
-│       ├── feature_specification.md
-│       └── temporal_validation.md
+│
+├── logs/
 │
 ├── notebooks/
 │   ├── 01_data_and_feature_analysis.ipynb
 │   └── 02_model_development_and_evaluation.ipynb
 │
 ├── scripts/
-│   └── create_sample_batch.py
 │
 ├── streamlit/
 │   └── app.py
 │
 ├── tests/
-│   ├── test_api.py
-│   ├── test_drift.py
-│   ├── test_monitoring.py
-│   ├── test_performance.py
-│   ├── test_predictor.py
-│   └── ...
 │
-├── .dockerignore
-├── .gitignore
 ├── Dockerfile
 ├── requirements.txt
+├── pytest.ini
+├── .gitignore
+├── LICENSE
 └── README.md
+
 ```
-## Visual Showcase
-
-The platform includes visual artifacts covering the modeling workflow, final evaluation, explainability, and deployed application interface.
-
----
-
-### Application Interface
-
-#### Platform Overview
-
-The Streamlit overview provides a high-level view of the platform health, active model configuration, and prediction activity.
-
-![Platform Overview](assets/plots/streamlit_overview.png)
-
----
-
-#### Fraud Prediction
-
-The fraud-prediction interface allows a transaction to be scored using the finalized 23-feature model schema.
-
-![Fraud Prediction](assets/plots/streamlit_fraud_prediction.png)
-
----
-
-#### Batch Prediction
-
-The batch-prediction interface supports CSV-based transaction scoring and presents the resulting fraud probabilities and decisions.
-
-![Batch Prediction](assets/plots/streamlit_batch_prediction.png)
-
----
-
-#### Monitoring
-
-The monitoring interface provides visibility into prediction activity and available operational monitoring information.
-
-![Monitoring](assets/plots/streamlit_monitoring.png)
-
----
-
-## Model Evaluation Visualizations
-
-### Model Comparison
-
-Validation PR-AUC is used to compare the candidate model configurations under the highly imbalanced fraud classification setting.
-
-![Model Comparison](assets/plots/model_comparison_pr_auc.png)
-
----
-
-### Threshold Trade-off
-
-The threshold analysis shows how the operating point affects predictive behaviour across different decision thresholds.
-
-![Threshold Trade-off](assets/plots/final_champion_threshold_tradeoff.png)
-
-The production threshold selected through the validation workflow is **0.70**.
-
----
-
-### Business Cost Analysis
-
-The business-cost analysis evaluates the trade-off between false-positive and false-negative costs across possible operating thresholds.
-
-![Business Cost Analysis](assets/plots/business_cost_analysis.png)
-
-The analysis uses the project's explicit analytical assumptions:
-
-```text
-False Positive Cost = 5
-False Negative Cost = 100
-```
-## Technical Stack
-
-| Layer | Technologies |
-| --- | --- |
-| Language | Python 3.11 |
-| Data Processing | Pandas, NumPy, PyArrow |
-| Machine Learning | Scikit-learn, XGBoost, CatBoost, LightGBM |
-| Statistical / Scientific Computing | SciPy |
-| Model Persistence | Joblib |
-| Backend API | FastAPI, Uvicorn, Pydantic |
-| Frontend | Streamlit |
-| Visualization | Matplotlib |
-| Testing | Pytest, HTTPX |
-| Notebook Environment | Jupyter, IPython Kernel |
-| Containerization | Docker |
-| Experiment Tracking | File-based project tracking |
-
----
-
-## Engineering & ML Practices
-
-The project follows several practices intended to keep the system maintainable and evaluation results meaningful.
-
-### Chronological Evaluation
-
-Training, validation, and test data are separated according to transaction time rather than through a random split.
-
-### Leakage-Aware Feature Engineering
-
-Historical customer and terminal features are generated using preceding transaction history.
-
-### Validation-Driven Model Selection
-
-Model, ensemble, and threshold decisions are made using the validation period.
-
-### Frozen Final Holdout
-
-The September 2018 test period is evaluated only after the final model configuration and production threshold are frozen.
-
-### Reusable Application Components
-
-Core inference, monitoring, evaluation, feature, and model functionality is implemented outside the notebooks.
-
-### Metadata-Driven Inference
-
-The production inference layer loads the persisted model configuration and decision threshold from model metadata.
-
-### Automated Testing
-
-The application is covered by an automated test suite with **82 passing tests** in the latest verified run.
-
-### Containerized Serving
-
-The FastAPI prediction service can be packaged and executed through Docker.
-
----
-
-## Assumptions & Limitations
-
-The platform is designed as a portfolio-scale machine learning and MLOps-oriented system. It demonstrates production-oriented practices without claiming enterprise-scale infrastructure.
-
-### Sequential Historical Information
-
-The terminal fraud-history features assume that previously processed fraud outcomes become available before subsequent transactions are scored.
-
-This assumption should be considered when adapting the feature pipeline to a real-time production environment.
-
-### Analytical Business Costs
-
-The business-cost analysis uses assumed costs:
-
-```text
-False Positive = 5
-False Negative = 100
-```
-The business-cost analysis is used as supporting decision evidence; the frozen production threshold of **0.70** was selected through the validation-based model evaluation workflow.
-
-## Deployment
-
-The platform is designed to be deployed as separate application services:
-
-```text
-                    Cloud Deployment
-                          │
-             ┌────────────┴────────────┐
-             ▼                         ▼
-       FastAPI Backend           Streamlit Frontend
-             │                         │
-             └────────────┬────────────┘
-                          ▼
-                  Fraud Risk Platform
-```
-## Running Locally
-
-The Fraud Risk Intelligence Platform can be run locally using a Python virtual environment. The platform uses **FastAPI** as the backend inference service and **Streamlit** as the interactive frontend.
-
-The finalized model artifact and metadata are loaded at runtime, so model training is not required to run the application.
-
-### 1. Clone the Repository
-
-Clone the repository and move into the project directory.
-
-```bash
-git clone https://github.com/Swaransh-Mishra/Fraud-Risk-Intelligence-Platform.git
-cd Fraud-Risk-Intelligence-Platform
-```
-### 2. Create a Virtual Environment
-
-Create an isolated Python environment to keep project dependencies separate from the system Python installation.
-
-```bash
-python -m venv .venv
-```
-Activate the environment based on your operating system.
-
-**Windows PowerShell**
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-**macOS / Linux**
-
-```bash
-source .venv/bin/activate
-```
-### 3. Install Dependencies
-
-Install the required project dependencies from `requirements.txt`.
-
-```bash
-pip install -r requirements.txt
-```
-### 4. Start the FastAPI Backend
-
-FastAPI provides the reusable inference API for fraud prediction, batch prediction, model information, and monitoring.
-
-Start the backend with:
-
-```bash
-uvicorn app.main:app --reload
-```
-The API will be available at:
-
-**API:** http://127.0.0.1:8000
-
-### 5. Verify the Backend
-
-Use the health endpoint to confirm that the backend is running correctly.
-
-**Health Check:** http://127.0.0.1:8000/health
-
-The model information endpoint provides runtime information about the loaded model and configuration.
-
-**Model Information:** http://127.0.0.1:8000/model-info
-
-### 6. Explore the API with Swagger
-
-FastAPI provides interactive API documentation through Swagger UI.
-
-Open:
-
-**Swagger UI:** http://127.0.0.1:8000/docs
-
-Swagger can be used to inspect and test the available API endpoints directly from the browser.
-
-The API provides functionality for:
-
-- Health checks
-- Model information
-- Single-transaction prediction
-- Batch prediction
-- Monitoring
-- Drift analysis
-- Performance monitoring
-
-### 7. Start the Streamlit Frontend
-
-The Streamlit application provides the interactive user interface for the fraud detection platform.
-
-Keep the FastAPI backend running and open a **second terminal**.
-
-Activate the virtual environment again if required.
-
-**Windows PowerShell**
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-**macOS / Linux**
-
-```bash
-source .venv/bin/activate
-```
-Start the Streamlit application:
-
-```bash
-streamlit run streamlit/app.py
-```
-The frontend will normally be available at:
-
-**Streamlit:** http://localhost:8501
-
-### 8. Use the Platform
-
-Once both services are running, the platform provides the following workflows:
-
-- **Fraud Prediction** — evaluate an individual transaction using the finalized fraud detection model.
-- **Batch Prediction** — process multiple transactions through the reusable inference API.
-- **Monitoring** — review available prediction, drift, and performance information.
-
-The Streamlit frontend communicates with the FastAPI backend, while the backend handles model loading, inference, and monitoring operations.
-
-### 9. Run the Test Suite
-
-The repository includes automated tests covering the application's core functionality and API behavior.
-
-Run the test suite from the project root:
-
-```bash
-pytest -q
-```
-A successful test run confirms that the current application components and API contracts are functioning as expected.
-
-### Local Runtime Architecture
-
-The local platform consists of two coordinated application processes:
-
-```text
-┌─────────────────────────┐
-│   Streamlit Frontend    │
-│       Port 8501         │
-└────────────┬────────────┘
-             │
-             │ HTTP Requests
-             ▼
-┌─────────────────────────┐
-│     FastAPI Backend     │
-│       Port 8000         │
-├─────────────────────────┤
-│ Prediction API          │
-│ Batch Prediction API    │
-│ Model Information       │
-│ Monitoring & Drift      │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│   Final Model Artifact  │
-│     + Model Metadata    │
-└─────────────────────────┘
-```
-This separation keeps the inference layer independent from the user interface and allows the FastAPI service to be consumed by Streamlit or other API clients.
-
-### Complete Local Startup
-
-For the complete platform experience, run the services in two separate terminals.
-
-**Terminal 1 — FastAPI Backend**
-
-```bash
-uvicorn app.main:app --reload
-```
-**Terminal 2 — Streamlit Frontend**
-
-```bash
-streamlit run streamlit/app.py
-```
-Then access the application at:
-
-**Streamlit:** http://localhost:8501
-
-For direct API interaction and endpoint testing:
-
-**Swagger UI:** http://127.0.0.1:8000/docs
-
-### Development Notes
-
-This setup is intended for running the finalized inference platform using the existing model artifact and metadata.
-
-Model training, hyperparameter tuning, notebook execution, and experimentation are development workflows and are not required for normal application usage.
 
 ## Swaransh Mishra
 
